@@ -55,9 +55,7 @@ func update_shop(floor):
 	#print("Updating Shop")
 	for i in get_node("ShopPanel/VBoxContainer").get_children():
 		i.hide()
-	if floor.name == "Floor_1":
-		$ShopPanel/VBoxContainer/Floor_One_Table.show()
-	elif floor.name == "Floor_2":
-		$ShopPanel/VBoxContainer/Floor_Two_Table.show()
+	if floor.name in ["Floor_1", "Floor_2"]:
+		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
 	elif floor.name == "Floor_TOP":
 		$ShopPanel/VBoxContainer/Floor_Top_Add_Floor.show()
