@@ -1,27 +1,33 @@
 extends Control
 
+# other nodes for use
 @onready var camera : Camera3D = get_node("../Camera3D")
 @onready var tower_segments : Array = get_node("../Tower").get_children()
 @onready var label : Label = get_node("Label")
 @onready var shop_panel : Panel = get_node("ShopPanel")
 
+# detect camera motion booleans for the shop to update
 var camera_is_moving_up : bool = false
 var camera_is_moving_down : bool = false
 
 
+# hide the shop at the start and check the floor for the label in the top left
 func _ready():
 	shop_panel.hide()
 	check_floor(camera.position)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
+	# define the camera position for easier use
 	var camera_pos : Vector3 = camera.position
 	
-	if Input.is_action_just_pressed("pan_up"):
+	# is the camera now panning up or down? set the bool to true or false
+	if Input.is_action_just_pressed("pan_up") and not camera.is_movement_locked:
 		camera_is_moving_up = true
-	if Input.is_action_just_pressed("pan_down"):
+	if Input.is_action_just_pressed("pan_down") and not camera.is_movement_locked:
 		camera_is_moving_down = true
 	
+	# if the camera has been defined as moving? then update after its finished
 	if camera_is_moving_up:
 		if camera.is_moving_up == false:
 			check_floor(camera_pos)
@@ -31,7 +37,8 @@ func _process(delta: float) -> void:
 		if camera.is_moving_down == false:
 			check_floor(camera_pos)
 			camera_is_moving_down = false
-			
+	
+	# Open the shop on command
 	if Input.is_action_just_pressed("open_shop"):
 		if shop_panel.visible:
 			shop_panel.hide()
@@ -41,6 +48,7 @@ func _process(delta: float) -> void:
 			#print("SHOW")
 
 
+# changes the label to match the current floor and refreshes the shop
 func check_floor(camera_pos : Vector3):
 	var y_pos : float = camera_pos.y
 	for i in tower_segments:
@@ -51,11 +59,13 @@ func check_floor(camera_pos : Vector3):
 				update_shop(i)
 
 
-func update_shop(floor):
+# update the shop after checking the floor
+# this is where the shop menu is controlled from
+func update_shop(curr_floor):
 	#print("Updating Shop")
 	for i in get_node("ShopPanel/VBoxContainer").get_children():
 		i.hide()
-	if floor.name in ["Floor_1", "Floor_2"]:
+	if curr_floor.name in ["Floor_1"]:
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
-	elif floor.name == "Floor_TOP":
+	elif curr_floor.name == "Floor_TOP":
 		$ShopPanel/VBoxContainer/Floor_Top_Add_Floor.show()
