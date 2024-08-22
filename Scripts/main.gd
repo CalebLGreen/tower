@@ -21,9 +21,9 @@ func _process(delta: float) -> void:
 		in_build_menu = true
 	else:
 		in_build_menu = false
-	print(in_build_menu)
+	#print(in_build_menu)
 	handle_mouse_controls()
-	
+	print(get_current_floor())
 	
 	
 func handle_mouse_controls() -> void:
@@ -53,6 +53,11 @@ func _on_floor_top_add_floor_pressed() -> void:
 func get_floor_count() -> int:
 	number_of_floors = get_tree().get_first_node_in_group("Tower").get_child_count()
 	return number_of_floors
+
+
+func get_current_floor() -> int:
+	var current_floor = floor(camera.position.y / 3.9)
+	return current_floor
 
 
 func _on_floor_one_table_pressed() -> void:

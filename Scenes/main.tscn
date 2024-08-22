@@ -1,14 +1,13 @@
-[gd_scene load_steps=27 format=3 uid="uid://4hi4ufjp1g3s"]
+[gd_scene load_steps=22 format=3 uid="uid://4hi4ufjp1g3s"]
 
 [ext_resource type="Script" path="res://Scripts/main.gd" id="1_88rcv"]
 [ext_resource type="Script" path="res://Scripts/camera_control.gd" id="1_kcuoo"]
-[ext_resource type="ArrayMesh" uid="uid://b5x2rhqt3uf1d" path="res://Models/Tower_Section.obj" id="2_ovhx4"]
-[ext_resource type="PackedScene" uid="uid://74kwddsljnsy" path="res://Scenes/floor_zero.tscn" id="3_awo7m"]
-[ext_resource type="ArrayMesh" uid="uid://ck0nf24ik6eyj" path="res://Models/tower_top.obj" id="3_ywgi4"]
+[ext_resource type="PackedScene" uid="uid://gx1h4j16yswi" path="res://Scenes/floor_zero.tscn" id="3_awo7m"]
 [ext_resource type="Script" path="res://Scripts/UI_Elements.gd" id="4_nc7x6"]
+[ext_resource type="PackedScene" uid="uid://eleodp2oab03" path="res://Scenes/tower_top.tscn" id="4_pvhli"]
 [ext_resource type="FontFile" uid="uid://b623f1fr8oufq" path="res://Fonts/Roboto-Thin.ttf" id="5_84eea"]
-[ext_resource type="Texture2D" uid="uid://cqubdkwj11v1i" path="res://Models/Grass.jpg" id="6_yp10b"]
-[ext_resource type="ArrayMesh" uid="uid://ddbn7dkabjfom" path="res://Models/Terrain.obj" id="7_wsdlj"]
+[ext_resource type="Texture2D" uid="uid://cqubdkwj11v1i" path="res://Models/Terrain/Grass.jpg" id="6_yp10b"]
+[ext_resource type="ArrayMesh" uid="uid://ddbn7dkabjfom" path="res://Models/Terrain/Terrain.obj" id="7_wsdlj"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_l33cc"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -24,22 +23,6 @@ tonemap_mode = 2
 glow_enabled = true
 volumetric_fog_enabled = true
 volumetric_fog_albedo = Color(0.45, 0.135, 0.135, 1)
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_ms3xt"]
-height = 0.1
-radius = 5.0
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_0mfmj"]
-height = 0.1
-radius = 5.0
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_n7e8q"]
-height = 0.1
-radius = 5.0
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_bgu64"]
-height = 0.1
-radius = 5.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2wlad"]
 bg_color = Color(0.445637, 0.654481, 0.55062, 1)
@@ -134,52 +117,10 @@ script = ExtResource("1_kcuoo")
 
 [node name="Tower" type="Node" parent="." groups=["Tower"]]
 
-[node name="Floor_0" parent="Tower" instance=ExtResource("3_awo7m")]
+[node name="Floor_ZERO" parent="Tower" instance=ExtResource("3_awo7m")]
 
-[node name="Floor_1" type="StaticBody3D" parent="Tower"]
+[node name="Floor_TOP" parent="Tower" instance=ExtResource("4_pvhli")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, 0)
-
-[node name="Floor_ONE_Mesh" type="MeshInstance3D" parent="Tower/Floor_1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.001, 0, 0)
-mesh = ExtResource("2_ovhx4")
-skeleton = NodePath("../../..")
-
-[node name="Floor_ONE_Collision" type="CollisionShape3D" parent="Tower/Floor_1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.194, 0)
-shape = SubResource("CylinderShape3D_ms3xt")
-
-[node name="Floor_2" type="StaticBody3D" parent="Tower"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.8, 0)
-
-[node name="Floor_TWO_Mesh" type="MeshInstance3D" parent="Tower/Floor_2"]
-mesh = ExtResource("2_ovhx4")
-skeleton = NodePath("../../..")
-
-[node name="Floor_TWO_Collision" type="CollisionShape3D" parent="Tower/Floor_2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.194, 0)
-shape = SubResource("CylinderShape3D_0mfmj")
-
-[node name="Floor_3" type="StaticBody3D" parent="Tower"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.7, 0)
-
-[node name="Floor_THREE_Mesh" type="MeshInstance3D" parent="Tower/Floor_3"]
-mesh = ExtResource("2_ovhx4")
-skeleton = NodePath("../../..")
-
-[node name="Floor_THREE_Collision" type="CollisionShape3D" parent="Tower/Floor_3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.194, 0)
-shape = SubResource("CylinderShape3D_n7e8q")
-
-[node name="Floor_TOP" type="StaticBody3D" parent="Tower"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.001, 15.6, 0)
-
-[node name="Floor_TOP" type="MeshInstance3D" parent="Tower/Floor_TOP"]
-mesh = ExtResource("3_ywgi4")
-skeleton = NodePath("../../..")
-
-[node name="Floor_TOP_Collision" type="CollisionShape3D" parent="Tower/Floor_TOP"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.194, 0)
-shape = SubResource("CylinderShape3D_bgu64")
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
