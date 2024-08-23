@@ -76,7 +76,6 @@ border_width_bottom = 2
 albedo_texture = ExtResource("6_yp10b")
 
 [node name="Main" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00109577, 0.0116072, -1.66893e-05)
 script = ExtResource("1_88rcv")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -151,11 +150,13 @@ text = "Top Floor Upgrade:
 Add Floor"
 
 [node name="Terrain" type="StaticBody3D" parent="."]
+metadata/_edit_lock_ = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
 material_override = SubResource("StandardMaterial3D_m304t")
 mesh = ExtResource("7_wsdlj")
+metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Add_Table" to="." method="_on_floor_add_table_pressed"]
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Top_Add_Floor" to="." method="_on_floor_top_add_floor_pressed"]
