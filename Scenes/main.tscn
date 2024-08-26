@@ -94,7 +94,7 @@ script = ExtResource("1_kcuoo")
 
 [node name="Floor_ZERO" parent="Tower" instance=ExtResource("3_awo7m")]
 
-[node name="Floor_TOP" parent="Tower" instance=ExtResource("4_pvhli")]
+[node name="Floor_TOP" parent="Tower" groups=["Tower_Piece"] instance=ExtResource("4_pvhli")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, 0)
 
 [node name="UI" type="Control" parent="."]
@@ -149,6 +149,16 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_5jy67")
 text = "Top Floor Upgrade:
 Add Floor"
 
+[node name="Move_Objects" type="Button" parent="UI/ShopPanel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -37.0
+offset_right = 86.0
+grow_vertical = 0
+text = "Move Object"
+
 [node name="Terrain" type="StaticBody3D" parent="."]
 metadata/_edit_lock_ = true
 
@@ -160,3 +170,4 @@ metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Add_Table" to="." method="_on_floor_add_table_pressed"]
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Top_Add_Floor" to="." method="_on_floor_top_add_floor_pressed"]
+[connection signal="pressed" from="UI/ShopPanel/Move_Objects" to="." method="_on_move_objects_pressed"]

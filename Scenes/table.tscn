@@ -40,7 +40,7 @@ data = PackedVector3Array(-0.5, 0.3355, 0.45, -0.5, -0.5, 0.5, -0.5, -0.5, 0.45,
 [sub_resource type="BoxShape3D" id="BoxShape3D_vqbkj"]
 size = Vector3(1, 1, 2.0014)
 
-[node name="Node3D" type="Node3D"]
+[node name="Node3D" type="Node3D" groups=["Object_Movable"]]
 
 [node name="Table" type="StaticBody3D" parent="."]
 
