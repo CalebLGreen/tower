@@ -106,7 +106,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4_nc7x6")
 
-[node name="Label" type="Label" parent="UI"]
+[node name="Floor_Label" type="Label" parent="UI"]
 layout_mode = 1
 offset_right = 377.0
 offset_bottom = 114.0
@@ -158,6 +158,16 @@ offset_top = -37.0
 offset_right = 86.0
 grow_vertical = 0
 text = "Move Object"
+
+[node name="Gold_Label" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+offset_right = 40.0
+grow_vertical = 0
+text = "Gold: XXXX"
 
 [node name="Terrain" type="StaticBody3D" parent="."]
 metadata/_edit_lock_ = true

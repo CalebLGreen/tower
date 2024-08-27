@@ -3,8 +3,10 @@ extends Control
 # other nodes for use
 @onready var camera : Camera3D = get_node("../Camera3D")
 @onready var tower_segments : Array = get_node("../Tower").get_children()
-@onready var label : Label = get_node("Label")
+@onready var floor_label : Label = get_node("Floor_Label")
+@onready var gold_label : Label = get_node("Gold_Label")
 @onready var shop_panel : Panel = get_node("ShopPanel")
+@onready var Main : Node3D = get_parent()
 
 # detect camera motion booleans for the shop to update
 var camera_is_moving_up : bool = false
@@ -15,6 +17,7 @@ var camera_is_moving_down : bool = false
 func _ready():
 	shop_panel.hide()
 	check_floor(camera.position)
+	update_gold_count()
 
 
 func _process(_delta: float) -> void:
@@ -41,6 +44,10 @@ func _process(_delta: float) -> void:
 	# Open the shop on command
 	if Input.is_action_just_pressed("open_shop"):
 		toggle_shop()
+	
+# Update Gold
+func update_gold_count() -> void:
+	gold_label.set_text("Gold: %d" % [Main.gold])
 
 func toggle_shop():
 	if shop_panel.visible:
@@ -58,7 +65,7 @@ func check_floor(camera_pos : Vector3):
 		if i is StaticBody3D:
 			#print(i)
 			if y_pos >= i.position.y:
-				label.set_text(i.name) 
+				floor_label.set_text(i.name) 
 				update_shop(i)
 
 

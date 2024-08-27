@@ -42,7 +42,7 @@ size = Vector3(1, 1, 2.0014)
 
 [node name="Node3D" type="Node3D" groups=["Object_Movable"]]
 
-[node name="Table" type="StaticBody3D" parent="."]
+[node name="Table" type="StaticBody3D" parent="." groups=["Object_Movable"]]
 
 [node name="Table_Mesh" type="MeshInstance3D" parent="Table"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)
