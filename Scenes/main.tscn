@@ -76,7 +76,6 @@ border_width_bottom = 2
 albedo_texture = ExtResource("6_yp10b")
 
 [node name="Main" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00109577, 0.0116072, -1.66893e-05)
 script = ExtResource("1_88rcv")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -95,7 +94,7 @@ script = ExtResource("1_kcuoo")
 
 [node name="Floor_ZERO" parent="Tower" instance=ExtResource("3_awo7m")]
 
-[node name="Floor_TOP" parent="Tower" instance=ExtResource("4_pvhli")]
+[node name="Floor_TOP" parent="Tower" groups=["Tower_Piece"] instance=ExtResource("4_pvhli")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, 0)
 
 [node name="UI" type="Control" parent="."]
@@ -107,7 +106,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4_nc7x6")
 
-[node name="Label" type="Label" parent="UI"]
+[node name="Floor_Label" type="Label" parent="UI"]
 layout_mode = 1
 offset_right = 377.0
 offset_bottom = 114.0
@@ -150,12 +149,35 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_5jy67")
 text = "Top Floor Upgrade:
 Add Floor"
 
+[node name="Move_Objects" type="Button" parent="UI/ShopPanel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -37.0
+offset_right = 86.0
+grow_vertical = 0
+text = "Move Object"
+
+[node name="Gold_Label" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+offset_right = 40.0
+grow_vertical = 0
+text = "Gold: XXXX"
+
 [node name="Terrain" type="StaticBody3D" parent="."]
+metadata/_edit_lock_ = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
 material_override = SubResource("StandardMaterial3D_m304t")
 mesh = ExtResource("7_wsdlj")
+metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Add_Table" to="." method="_on_floor_add_table_pressed"]
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Top_Add_Floor" to="." method="_on_floor_top_add_floor_pressed"]
+[connection signal="pressed" from="UI/ShopPanel/Move_Objects" to="." method="_on_move_objects_pressed"]

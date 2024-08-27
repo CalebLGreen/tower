@@ -40,9 +40,9 @@ data = PackedVector3Array(-0.5, 0.3355, 0.45, -0.5, -0.5, 0.5, -0.5, -0.5, 0.45,
 [sub_resource type="BoxShape3D" id="BoxShape3D_vqbkj"]
 size = Vector3(1, 1, 2.0014)
 
-[node name="Node3D" type="Node3D"]
+[node name="Node3D" type="Node3D" groups=["Object_Movable"]]
 
-[node name="Table" type="StaticBody3D" parent="."]
+[node name="Table" type="StaticBody3D" parent="." groups=["Object_Movable"]]
 
 [node name="Table_Mesh" type="MeshInstance3D" parent="Table"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)
