@@ -31,6 +31,7 @@ var temp_object = null
 var in_build_menu : bool = false
 var building_table : Dictionary = {'value' : false}
 var moving_object : Dictionary = {'value' : false}
+var moving_object_original_coords : Dictionary = {'x' : 0, 'y' : 0, 'z' : 0}
 var selected_object = null
 @onready var shop_objects : Dictionary = {'Table' : table}
 @onready var building_current_item : Dictionary = {
@@ -111,14 +112,6 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 			temp_object = object.instantiate()
 			get_node("Tower/%s" % [curr_floor]).add_child(temp_object)
 			temp_object.visible = true
-			# Add the object to the correct groups
-			
-		# Cancel placement
-		if Input.is_action_just_pressed("cancel"):
-			temp_object.queue_free()
-			building_object.value = false
-			camera.is_movement_locked = false
-			UI.toggle_shop()
 		
 		# If the ghostly object does already exist continue
 		if temp_object:
@@ -189,6 +182,33 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 						cost_data['cost'] = original_building_items_cost[object_name]
 						building_items_costs[object_name] = cost_data
 						UI.update_gold_count()
+							# Cancel placement
+					if Input.is_action_just_pressed("cancel"):
+						if moving_object.value == true:
+							# Restore it to its original coordinates
+							temp_object.global_position.x = moving_object_original_coords.x
+							temp_object.global_position.y = moving_object_original_coords.y
+							temp_object.global_position.z = moving_object_original_coords.z
+							# Name the object
+							temp_object.name = "%s" % [object_name]
+							# Change the collision layer back to 1
+							temp_object.get_node("%s" % [object_name]).collision_layer = 1
+							# Reset it back to default textures
+							mesh_instance.set_surface_override_material(0, null)
+							# This object now no longer exists as a variable
+							#print(temp_object.get_groups())
+							temp_object = null
+							# Stop building the current object
+							building_object.value = false
+							# Unlock the camera
+							camera.is_movement_locked = false
+							# Turn off moving object mode
+							moving_object.value = false
+						else:
+							temp_object.queue_free()
+							building_object.value = false
+							camera.is_movement_locked = false
+							UI.toggle_shop()
 
 # Function to move objects on a floor
 func move(ray_result : Dictionary, moving_object : Dictionary, delta : float) -> void:
@@ -198,13 +218,17 @@ func move(ray_result : Dictionary, moving_object : Dictionary, delta : float) ->
 		var curr_floor = get_current_floor()
 		# left_click to select an object
 		if Input.is_action_just_pressed("left_click"):
-			select_object(ray_result)
+			selected_object = select_object(ray_result)
 			# Retrieve the name of the object selected
 			var object_name = String(selected_object.name)
 			# Check the objects groups to see if it should be moved
 			var object_groups = selected_object.get_groups()
 			for group in object_groups:
 				if group == "Object_Movable":
+					# Track its original coordinates
+					moving_object_original_coords.x = selected_object.global_position.x
+					moving_object_original_coords.y = selected_object.global_position.y
+					moving_object_original_coords.z = selected_object.global_position.z
 					# If it can be moved delete it
 					selected_object.queue_free()
 					# And rebuild it as if the build button had been pressed
@@ -219,10 +243,11 @@ func move(ray_result : Dictionary, moving_object : Dictionary, delta : float) ->
 			selected_object = null
 			moving_object.value = false
 
-func select_object(ray_result : Dictionary) -> void:
+func select_object(ray_result : Dictionary):
 	var collider = ray_result.get("collider")
 	if collider and collider is Node3D:
 		selected_object = collider
+		return selected_object
 	else:
 		print("Object not selectable")
 
