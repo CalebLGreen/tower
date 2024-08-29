@@ -10,6 +10,7 @@ var camera_max_height : float = 16.1
 var camera_min_height : float
 var camera_max_distance : float = 10
 var camera_min_distance : float = 4
+var camera_lerp_speed : float = 0.1
 var target_y : float = 0.0
 
 # Export variables
@@ -37,14 +38,14 @@ func _process(delta: float) -> void:
 	
 	# Smoothing the  Pan Up
 	if is_moving_up:
-		camera.position.y = lerp(camera.position.y, target_y, 0.2)
+		camera.position.y = lerp(camera.position.y, target_y, camera_lerp_speed)
 		if abs(camera.position.y - target_y) < 0.01:  # Stop moving when close to the target
 			camera.position.y = target_y
 			is_moving_up = false
 	
 	# Smoothing the Pan Down
 	if is_moving_down:
-		camera.position.y = lerp(camera.position.y, target_y, 0.2)
+		camera.position.y = lerp(camera.position.y, target_y, camera_lerp_speed)
 		if abs(camera.position.y - target_y) < 0.01:  # Stop moving when close to the target
 			camera.position.y = target_y
 			is_moving_down = false

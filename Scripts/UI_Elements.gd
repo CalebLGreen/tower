@@ -75,7 +75,9 @@ func update_shop(curr_floor):
 	#print("Updating Shop")
 	for i in get_node("ShopPanel/VBoxContainer").get_children():
 		i.hide()
-	if curr_floor.name == "Floor_1":
+	if curr_floor.name == "Floor_3":
+		$ShopPanel/VBoxContainer/Floor_Add_Furnace.show()
+	elif curr_floor.name == "Floor_1":
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
 	elif curr_floor.name == "Floor_2":
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()

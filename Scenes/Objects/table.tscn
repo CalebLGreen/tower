@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=4 uid="uid://c6laskv1k34p6"]
 
-[ext_resource type="Material" uid="uid://87s3c87h4xkk" path="res://Models/green.tres" id="1_22x83"]
+[ext_resource type="Material" uid="uid://87s3c87h4xkk" path="res://Models/Tower/Tower_Objects/green.tres" id="1_croub"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k7k5k"]
 
@@ -40,7 +40,7 @@ data = PackedVector3Array(-0.5, 0.3355, 0.45, -0.5, -0.5, 0.5, -0.5, -0.5, 0.45,
 [sub_resource type="BoxShape3D" id="BoxShape3D_vqbkj"]
 size = Vector3(1, 1, 2.0014)
 
-[node name="Node3D" type="Node3D" groups=["Object_Movable"]]
+[node name="Table" type="Node3D" groups=["Object_Movable"]]
 
 [node name="Table" type="StaticBody3D" parent="." groups=["Object_Movable"]]
 
@@ -48,7 +48,7 @@ size = Vector3(1, 1, 2.0014)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)
 mesh = SubResource("ArrayMesh_lm0yq")
 skeleton = NodePath("")
-surface_material_override/0 = ExtResource("1_22x83")
+surface_material_override/0 = ExtResource("1_croub")
 
 [node name="Table_Collision" type="CollisionShape3D" parent="Table"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)

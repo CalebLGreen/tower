@@ -6,7 +6,7 @@ extends Node3D
 @onready var tower = get_node("Tower")
 @onready var top_floor = get_node("Tower/Floor_TOP")
 @onready var number_of_floors : int
-@onready var blank_floor : PackedScene = preload("res://Scenes/floor_blank.tscn")
+@onready var blank_floor : PackedScene = preload("res://Scenes/Tower/floor_blank.tscn")
 
 # Cursors
 var cursor_default = load("res://Models/Cursors/arrow_cursor_default.png")
@@ -14,7 +14,7 @@ var cursor_move = load("res://Models/Cursors/arrow_cursor.png")
 var cursor_build = load("res://Models/Cursors/cursor_hammer.png")
 
 # Player Values
-var gold : int = 1000
+var gold : int = 10000
 
 # Constants
 var tower_segment_base_height = 0.77
@@ -27,7 +27,10 @@ var tower_segment_height = 3.9
 var timer = false
 
 # Buildables
-@onready var table : PackedScene = preload("res://Scenes/table.tscn")
+@onready var table : PackedScene = preload("res://Scenes/Objects/table.tscn")
+@onready var furnace : PackedScene = preload("res://Scenes/Objects/furnace.tscn")
+var green_overlay = load("res://Models/Tower/Tower_Objects/green.tres")
+var red_overlay = load("res://Models/Tower/Tower_Objects/red.tres")
 var table_cost : int = 100
 var furnace_cost : int = 500
 
@@ -35,13 +38,15 @@ var furnace_cost : int = 500
 var temp_object = null
 var in_build_menu : bool = false
 var building_table : Dictionary = {'value' : false}
+var building_furnace : Dictionary = {'value' : false}
 var moving_object : Dictionary = {'value' : false}
 var moving_object_original_position : Dictionary = {'x' : 0, 'y' : 0, 'z' : 0}
 var moving_object_original_rotation : Dictionary = {'x' : 0, 'y' : 0, 'z' : 0}
 var selected_object = null
-@onready var shop_objects : Dictionary = {'Table' : table}
+@onready var shop_objects : Dictionary = {'Table' : table, 'Furnace' : furnace}
 @onready var building_current_item : Dictionary = {
-	'Table' : building_table
+	'Table' : building_table,
+	'Furnace' : building_furnace
 }
 @onready var original_building_items_cost : Dictionary = {
 	'Table' : table_cost,
@@ -100,14 +105,22 @@ func handle_mouse_controls(delta) -> void:
 	if building_table.value:
 		var key = "Table"
 		if gold >= building_items_costs[key]['cost']:
-			build(shop_objects[key], key, building_current_item[key], ray_result, delta, building_items_costs[key])
+			build(shop_objects[key], key, building_current_item[key], ray_result, delta, +0.52, building_items_costs[key])
 		else:
 			print("Too Poor")
+			building_table.value = false
+	if building_furnace.value:
+		var key = "Furnace"
+		if gold >= building_items_costs[key]['cost']:
+			build(shop_objects[key], key, building_current_item[key], ray_result, delta, -0.05, building_items_costs[key])
+		else:
+			print("Too Poor")
+			building_furnace.value = false
 	if moving_object.value:
 		move(ray_result, moving_object, delta)
 
 
-func build(object : PackedScene, object_name : String, building_object : Dictionary, ray_result: Dictionary, delta: float, cost : Dictionary = {'cost' : 0}) -> void:
+func build(object : PackedScene, object_name : String, building_object : Dictionary, ray_result: Dictionary, delta: float, offset, build_cost : Dictionary = {'cost' : 0}) -> void:
 	# stop the user changing floors
 	camera.is_movement_locked = true
 	# Toggle the shop window to give more visibility
@@ -141,8 +154,8 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 			# Set the the object position to hover slightly below this point, due to my silly blender skills
 			var intersection_point : Vector3 = ray_result.get("position")
 			
-			var current_floor_number = get_current_floor_num()
-			var offset = 0.52 # - (tower_segment_height * current_floor_number - 1)
+			#var current_floor_number = get_current_floor_num()
+			# Adjust the offset because all 3d files are complicated and I don't understand them yet
 			temp_object.global_position = intersection_point + Vector3(0, offset, 0)
 			#prints(current_floor_number, offset, intersection_point)
 			# Allow for rotations - simple enough
@@ -163,14 +176,22 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 				for body in overlaps:
 					if not is_floor(body, curr_floor):
 						valid_overlaps.append(body)
-				# See if there are any overlaps, in which case make the material red
-				# and it cannot be placed
-				if overlaps.size() > 0 or temp_object.global_position.y < (camera.position.y - 1.5) or temp_object.global_position.y > (camera.position.y-1):
+				# See if there are any overlaps
+				# and check it cannot be placed on the wrong floors
+				# if either are wrong then make the material red
+				var object_camera_difference_abs: float = absf(temp_object.global_position.y - camera.global_position.y)
+				if overlaps.size() > 0 or (object_camera_difference_abs < 1) or (object_camera_difference_abs > 2):
 					#print(temp_object.global_position.y, " ", camera.position.y)
-					mesh_instance.set_surface_override_material(0, load("res://Models/red.tres"))
+					mesh_instance.set_surface_override_material(0, red_overlay)
+					# Allow cancelling here
+					if Input.is_action_just_pressed("cancel"):
+						# make sure temp_object is null 
+						# otherwise it will be deleted when the next initiatisation is meant to occur
+						cancel_build(temp_object, object_name, mesh_instance, building_object)
+						temp_object = null
 				# If no overlaps then we are good to go
 				else:
-					mesh_instance.set_surface_override_material(0, load("res://Models/green.tres"))
+					mesh_instance.set_surface_override_material(0, green_overlay)
 					if Input.is_action_just_pressed("left_click"):
 						# Name the object
 						temp_object.name = "%s" % [object_name]
@@ -188,7 +209,7 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 						# Unlock the camera
 						camera.is_movement_locked = false
 						# Reduce Gold amount by cost
-						gold -= building_items_costs[object_name]['cost']
+						gold -= build_cost.cost
 						# update the cost of the object to be back to default
 						# This is for when the object was 'built' by moving and was free
 						var cost_data = building_items_costs.get(object_name, {})
@@ -202,44 +223,55 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 
 					# Cancel placement
 					if Input.is_action_just_pressed("cancel"):
-						if moving_object.value == true:
-							# Restore it to its original coordinates and rotation
-							temp_object.global_position.x = moving_object_original_position.x
-							temp_object.global_position.y = moving_object_original_position.y
-							temp_object.global_position.z = moving_object_original_position.z
-							temp_object.rotation.x = moving_object_original_rotation.x
-							temp_object.rotation.y = moving_object_original_rotation.y
-							temp_object.rotation.z = moving_object_original_rotation.z
-							# Name the object
-							temp_object.name = "%s" % [object_name]
-							# Change the collision layer back to 1
-							temp_object.get_node("%s" % [object_name]).collision_layer = 1
-							# Reset it back to default textures
-							mesh_instance.set_surface_override_material(0, null)
-							# This object now no longer exists as a variable
-							#print(temp_object.get_groups())
-							temp_object = null
-							# Stop building the current object
-							building_object.value = false
-							# Unlock the camera
-							camera.is_movement_locked = false
-							# Turn off moving object mode
-							moving_object.value = false
-							# re-open the shop the shop
-							UI.toggle_shop()
-							# Mouse cursor back to default
-							change_mouse_cursor_image(cursor_default)
-						else:
-							# delete object
-							temp_object.queue_free()
-							# stop building
-							building_object.value = false
-							# stop locking camera
-							camera.is_movement_locked = false
-							# re-open the shop the shop
-							UI.toggle_shop()
-							# mouse cursor back to default
-							change_mouse_cursor_image(cursor_default)
+						# cancel the build
+						cancel_build(temp_object, object_name, mesh_instance, building_object)
+						# make sure temp_object is null 
+						# otherwise it will be deleted when the next initiatisation is meant to occur
+						temp_object = null
+
+# Triggered if building/moving is cancelled
+func cancel_build(temp_object, object_name, mesh_instance, building_object):
+	if moving_object.value == true:
+		print("Triggered")
+		# Restore it to its original coordinates and rotation
+		temp_object.global_position.x = moving_object_original_position.x
+		temp_object.global_position.y = moving_object_original_position.y
+		temp_object.global_position.z = moving_object_original_position.z
+		temp_object.rotation.x = moving_object_original_rotation.x
+		temp_object.rotation.y = moving_object_original_rotation.y
+		temp_object.rotation.z = moving_object_original_rotation.z
+		# Name the object
+		temp_object.name = "%s" % [object_name]
+		# Change the collision layer back to 1
+		temp_object.get_node("%s" % [object_name]).collision_layer = 1
+		# Reset it back to default textures
+		mesh_instance.set_surface_override_material(0, null)
+		# This object now no longer exists as a variable
+		#print(temp_object.get_groups())
+		temp_object = null
+		# Stop building the current object
+		building_object.value = false
+		# Unlock the camera
+		camera.is_movement_locked = false
+		# Turn off moving object mode
+		moving_object.value = false
+		# re-open the shop the shop
+		UI.toggle_shop()
+		# Mouse cursor back to default
+		change_mouse_cursor_image(cursor_default)
+	else:
+		# delete object
+		temp_object.queue_free()
+		temp_object = null
+		# stop building
+		building_object.value = false
+		# stop locking camera
+		camera.is_movement_locked = false
+		# re-open the shop the shop
+		UI.toggle_shop()
+		# mouse cursor back to default
+		change_mouse_cursor_image(cursor_default)
+
 
 # Function to move objects on a floor
 func move(ray_result : Dictionary, moving_object : Dictionary, delta : float) -> void:
@@ -354,6 +386,12 @@ func get_current_floor_num() -> int:
 func _on_floor_add_table_pressed() -> void:
 	building_table.value = true
 	change_mouse_cursor_image(cursor_build)
+
+# for when the button to buy a furnace has been pressed
+func _on_floor_add_furnace_pressed() -> void:
+	building_furnace.value = true
+	change_mouse_cursor_image(cursor_build)
+
 
 # For when the move button is pressed
 func _on_move_objects_pressed() -> void:

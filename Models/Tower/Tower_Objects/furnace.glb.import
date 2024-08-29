@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bbkv0snxjp4en"
-path="res://.godot/imported/tower_section.glb-3955265f473b02310a3dda804bb83a96.scn"
+uid="uid://bvi3nymowkpqv"
+path="res://.godot/imported/furnace.glb-4aaef2f4c6355b8ff2e17874f51fb5a4.scn"
 
 [deps]
 
-source_file="res://Models/Tower_Sections/tower_section.glb"
-dest_files=["res://.godot/imported/tower_section.glb-3955265f473b02310a3dda804bb83a96.scn"]
+source_file="res://Models/Tower/Tower_Objects/furnace.glb"
+dest_files=["res://.godot/imported/furnace.glb-4aaef2f4c6355b8ff2e17874f51fb5a4.scn"]
 
 [params]
 
