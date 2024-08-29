@@ -8,6 +8,11 @@ extends Node3D
 @onready var number_of_floors : int
 @onready var blank_floor : PackedScene = preload("res://Scenes/floor_blank.tscn")
 
+# Cursors
+var cursor_default = load("res://Models/Cursors/arrow_cursor_default.png")
+var cursor_move = load("res://Models/Cursors/arrow_cursor.png")
+var cursor_build = load("res://Models/Cursors/cursor_hammer.png")
+
 # Player Values
 var gold : int = 1000
 
@@ -31,7 +36,8 @@ var temp_object = null
 var in_build_menu : bool = false
 var building_table : Dictionary = {'value' : false}
 var moving_object : Dictionary = {'value' : false}
-var moving_object_original_coords : Dictionary = {'x' : 0, 'y' : 0, 'z' : 0}
+var moving_object_original_position : Dictionary = {'x' : 0, 'y' : 0, 'z' : 0}
+var moving_object_original_rotation : Dictionary = {'x' : 0, 'y' : 0, 'z' : 0}
 var selected_object = null
 @onready var shop_objects : Dictionary = {'Table' : table}
 @onready var building_current_item : Dictionary = {
@@ -49,8 +55,8 @@ var selected_object = null
 func _ready() -> void:
 	# Reset camera
 	camera.position = Vector3(8,1,0)
-	# get the floor count, important for other functions
-	get_floor_count()
+	# Change cursor
+	change_mouse_cursor_image(cursor_default)
 
 
 func _process(delta: float) -> void:
@@ -61,8 +67,12 @@ func _process(delta: float) -> void:
 		in_build_menu = false
 	# handle the mouse controls, currently only used in the shop
 	handle_mouse_controls(delta)
-	
-	
+
+
+func change_mouse_cursor_image(cursor_image, cursor_shape = 0) -> void:
+	Input.set_custom_mouse_cursor(cursor_image)
+	Input.set_default_cursor_shape(cursor_shape)
+
 func handle_mouse_controls(delta) -> void:
 	# Create a ray cast on the mouse
 	var space_state : PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
@@ -87,20 +97,23 @@ func handle_mouse_controls(delta) -> void:
 		#await timer.timeout
 		#print(origin, ", ", end, " ", ray_result)
 		#timer = false
-	# Now if building
-	if in_build_menu:
-		# Check if the table is being built
-		if building_table.value:
-			var key = "Table"
+	if building_table.value:
+		var key = "Table"
+		if gold >= building_items_costs[key]['cost']:
 			build(shop_objects[key], key, building_current_item[key], ray_result, delta, building_items_costs[key])
-		if moving_object.value:
-			move(ray_result, moving_object, delta)
+		else:
+			print("Too Poor")
+	if moving_object.value:
+		move(ray_result, moving_object, delta)
 
 
 func build(object : PackedScene, object_name : String, building_object : Dictionary, ray_result: Dictionary, delta: float, cost : Dictionary = {'cost' : 0}) -> void:
 	# stop the user changing floors
 	camera.is_movement_locked = true
-	
+	# Toggle the shop window to give more visibility
+	if UI.shop_panel.visible:
+		UI.toggle_shop()
+		pass
 	# DEBUG print
 	#print("BUILDING")
 	# Check whether the ray has collided with anything, i.e. the floor
@@ -129,8 +142,8 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 			var intersection_point : Vector3 = ray_result.get("position")
 			
 			var current_floor_number = get_current_floor_num()
-			var offset = -0.48 - (tower_segment_height * current_floor_number - 1)
-			temp_object.position = intersection_point + Vector3(0, offset, 0)
+			var offset = 0.52 # - (tower_segment_height * current_floor_number - 1)
+			temp_object.global_position = intersection_point + Vector3(0, offset, 0)
 			#prints(current_floor_number, offset, intersection_point)
 			# Allow for rotations - simple enough
 			if Input.is_action_pressed("rotate_left"):
@@ -181,14 +194,22 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 						var cost_data = building_items_costs.get(object_name, {})
 						cost_data['cost'] = original_building_items_cost[object_name]
 						building_items_costs[object_name] = cost_data
+						# Show the shop again and change the gold amount
+						UI.toggle_shop()
 						UI.update_gold_count()
-							# Cancel placement
+						# Return mouse cursor to default
+						change_mouse_cursor_image(cursor_default)
+
+					# Cancel placement
 					if Input.is_action_just_pressed("cancel"):
 						if moving_object.value == true:
-							# Restore it to its original coordinates
-							temp_object.global_position.x = moving_object_original_coords.x
-							temp_object.global_position.y = moving_object_original_coords.y
-							temp_object.global_position.z = moving_object_original_coords.z
+							# Restore it to its original coordinates and rotation
+							temp_object.global_position.x = moving_object_original_position.x
+							temp_object.global_position.y = moving_object_original_position.y
+							temp_object.global_position.z = moving_object_original_position.z
+							temp_object.rotation.x = moving_object_original_rotation.x
+							temp_object.rotation.y = moving_object_original_rotation.y
+							temp_object.rotation.z = moving_object_original_rotation.z
 							# Name the object
 							temp_object.name = "%s" % [object_name]
 							# Change the collision layer back to 1
@@ -204,11 +225,21 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 							camera.is_movement_locked = false
 							# Turn off moving object mode
 							moving_object.value = false
-						else:
-							temp_object.queue_free()
-							building_object.value = false
-							camera.is_movement_locked = false
+							# re-open the shop the shop
 							UI.toggle_shop()
+							# Mouse cursor back to default
+							change_mouse_cursor_image(cursor_default)
+						else:
+							# delete object
+							temp_object.queue_free()
+							# stop building
+							building_object.value = false
+							# stop locking camera
+							camera.is_movement_locked = false
+							# re-open the shop the shop
+							UI.toggle_shop()
+							# mouse cursor back to default
+							change_mouse_cursor_image(cursor_default)
 
 # Function to move objects on a floor
 func move(ray_result : Dictionary, moving_object : Dictionary, delta : float) -> void:
@@ -220,29 +251,37 @@ func move(ray_result : Dictionary, moving_object : Dictionary, delta : float) ->
 		if Input.is_action_just_pressed("left_click"):
 			selected_object = select_object(ray_result)
 			# Retrieve the name of the object selected
-			var object_name = String(selected_object.name)
-			# Check the objects groups to see if it should be moved
-			var object_groups = selected_object.get_groups()
-			for group in object_groups:
-				if group == "Object_Movable":
-					# Track its original coordinates
-					moving_object_original_coords.x = selected_object.global_position.x
-					moving_object_original_coords.y = selected_object.global_position.y
-					moving_object_original_coords.z = selected_object.global_position.z
-					# If it can be moved delete it
-					selected_object.queue_free()
-					# And rebuild it as if the build button had been pressed
-					building_current_item[object_name].value = true
-					# However change the cost of building the item to 0
-					var cost_data = building_items_costs.get(object_name, {})
-					cost_data['cost'] = 0
-					# Update that cost
-					building_items_costs[object_name] = cost_data
+			if selected_object != null:
+				var object_name = String(selected_object.name)
+				# Check the objects groups to see if it should be moved
+				var object_groups = selected_object.get_groups()
+				for group in object_groups:
+					if group == "Object_Movable":
+						# Change mouse cursor to show what is happening
+						change_mouse_cursor_image(cursor_move, 3)
+						# Track its original coordinates
+						moving_object_original_position.x = selected_object.global_position.x
+						moving_object_original_position.y = selected_object.global_position.y
+						moving_object_original_position.z = selected_object.global_position.z
+						moving_object_original_rotation.x = selected_object.rotation.x
+						moving_object_original_rotation.y = selected_object.rotation.y
+						moving_object_original_rotation.z = selected_object.rotation.z
+						# If it can be moved delete it
+						selected_object.queue_free()
+						# And rebuild it as if the build button had been pressed
+						building_current_item[object_name].value = true
+						# However change the cost of building the item to 0
+						var cost_data = building_items_costs.get(object_name, {})
+						cost_data['cost'] = 0
+						# Update that cost
+						building_items_costs[object_name] = cost_data
 		# If tab is pressed, cancel the operation
 		elif Input.is_action_just_pressed("cancel"):
 			selected_object = null
 			moving_object.value = false
+			change_mouse_cursor_image(cursor_default)
 
+# Selects an object and returns it
 func select_object(ray_result : Dictionary):
 	var collider = ray_result.get("collider")
 	if collider and collider is Node3D:
@@ -250,6 +289,7 @@ func select_object(ray_result : Dictionary):
 		return selected_object
 	else:
 		print("Object not selectable")
+		return null
 
 # Function to check whether the floor is the current floor
 func is_floor(body: Node3D, current_floor) -> bool:
@@ -282,7 +322,7 @@ func _on_floor_top_add_floor_pressed() -> void:
 	# update the camera information for clamping
 	camera.get_floor_count()
 
-# get the floor count
+# get the floor count, returned as an int
 func get_floor_count() -> int:
 	number_of_floors = get_tree().get_first_node_in_group("Tower").get_child_count()
 	return number_of_floors
@@ -292,6 +332,7 @@ func get_current_floor() -> String:
 	var current_floor_name = get_node("UI/Floor_Label").text
 	return current_floor_name
 
+# returns the current floor number as an int
 func get_current_floor_num() -> int:
 	var current_floor_number
 	var current_floor_name = get_current_floor()
@@ -312,7 +353,8 @@ func get_current_floor_num() -> int:
 # for when the button to buy a table has been pressed
 func _on_floor_add_table_pressed() -> void:
 	building_table.value = true
+	change_mouse_cursor_image(cursor_build)
 
-
+# For when the move button is pressed
 func _on_move_objects_pressed() -> void:
 	moving_object.value = true

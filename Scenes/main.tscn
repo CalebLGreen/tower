@@ -92,7 +92,7 @@ script = ExtResource("1_kcuoo")
 
 [node name="Tower" type="Node" parent="." groups=["Tower"]]
 
-[node name="Floor_ZERO" parent="Tower" instance=ExtResource("3_awo7m")]
+[node name="Floor_0" parent="Tower" instance=ExtResource("3_awo7m")]
 
 [node name="Floor_TOP" parent="Tower" groups=["Tower_Piece"] instance=ExtResource("4_pvhli")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, 0)

@@ -62,7 +62,7 @@ func toggle_shop():
 func check_floor(camera_pos : Vector3):
 	var y_pos : float = camera_pos.y
 	for i in tower_segments:
-		if i is StaticBody3D:
+		if i is Node3D:
 			#print(i)
 			if y_pos >= i.position.y:
 				floor_label.set_text(i.name) 
