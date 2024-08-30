@@ -86,7 +86,7 @@ transform = Transform3D(-0.692559, -0.624718, 0.360681, 0, 0.5, 0.866025, -0.721
 shadow_enabled = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 8, 1, 0)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 8, 0.5, 0)
 current = true
 script = ExtResource("1_kcuoo")
 
@@ -96,6 +96,8 @@ script = ExtResource("1_kcuoo")
 
 [node name="Floor_TOP" parent="Tower" groups=["Tower_Piece"] instance=ExtResource("4_pvhli")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, 0)
+
+[node name="Basement_Floors" type="Node" parent="Tower" groups=["Tower_Basement"]]
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
@@ -158,6 +160,15 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_5jy67")
 text = "Top Floor Upgrade:
 Add Floor"
 
+[node name="Floor_Bottom_Add_Floor" type="Button" parent="UI/ShopPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/hover = SubResource("StyleBoxFlat_mm2nl")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ei0ub")
+theme_override_styles/normal = SubResource("StyleBoxFlat_5jy67")
+text = "Bottom Floor Upgrade:
+Add Basement Floor"
+
 [node name="Move_Objects" type="Button" parent="UI/ShopPanel"]
 layout_mode = 1
 anchors_preset = 2
@@ -190,4 +201,5 @@ metadata/_edit_lock_ = true
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Add_Table" to="." method="_on_floor_add_table_pressed"]
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Add_Furnace" to="." method="_on_floor_add_furnace_pressed"]
 [connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Top_Add_Floor" to="." method="_on_floor_top_add_floor_pressed"]
+[connection signal="pressed" from="UI/ShopPanel/VBoxContainer/Floor_Bottom_Add_Floor" to="." method="_on_floor_bottom_add_floor_pressed"]
 [connection signal="pressed" from="UI/ShopPanel/Move_Objects" to="." method="_on_move_objects_pressed"]

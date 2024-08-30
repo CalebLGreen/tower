@@ -6,7 +6,7 @@ extends Camera3D
 # camera speeds and distances for clamping
 var camera_pan_incr : float = 3.9
 var camera_zoom_speed : int = 25
-var camera_max_height : float = 16.1
+var camera_max_height : float
 var camera_min_height : float
 var camera_max_distance : float = 10
 var camera_min_distance : float = 4
@@ -20,10 +20,14 @@ var target_y : float = 0.0
 
 # get the floor count at initialisation
 func _ready():
-	get_floor_count()
+	get_camera_clamp_values()
 	
 
 func _process(delta: float) -> void:
+	handle_camera_controls(delta)
+
+
+func handle_camera_controls(delta) -> void:
 	# Pan Up
 	if Input.is_action_just_pressed("pan_up") and not is_movement_locked:
 		target_y = clamp(camera.position.y + (camera_pan_incr), camera_min_height, camera_max_height)
@@ -60,8 +64,9 @@ func _process(delta: float) -> void:
 
 
 # Get the floor count for the camera clamping
-func get_floor_count():
+func get_camera_clamp_values():
 	var number_of_floors = get_tree().get_first_node_in_group("Tower").get_child_count()
-	camera_min_height = 0.5
-	camera_max_height = 0.5 + (3.9 * (number_of_floors - 1))
+	var number_of_basement_floors = get_tree().get_first_node_in_group("Tower_Basement").get_child_count()
+	camera_min_height = 0.5 - (3.9 * number_of_basement_floors)
+	camera_max_height = 0.5 + (3.9 * (number_of_floors - 2))
 	#print("Min Height: ", (camera_min_height), ", Max Height: ", (camera_max_height))

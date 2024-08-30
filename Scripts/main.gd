@@ -5,7 +5,8 @@ extends Node3D
 @onready var UI : Control = get_node("UI")
 @onready var tower = get_node("Tower")
 @onready var top_floor = get_node("Tower/Floor_TOP")
-@onready var number_of_floors : int
+var number_of_floors : int
+var number_of_basement_floors : int
 @onready var blank_floor : PackedScene = preload("res://Scenes/Tower/floor_blank.tscn")
 
 # Cursors
@@ -59,7 +60,8 @@ var selected_object = null
 
 func _ready() -> void:
 	# Reset camera
-	camera.position = Vector3(8,1,0)
+	print("Setting camera position")
+	camera.position = Vector3(8,0.5,0)
 	# Change cursor
 	change_mouse_cursor_image(cursor_default)
 
@@ -105,14 +107,14 @@ func handle_mouse_controls(delta) -> void:
 	if building_table.value:
 		var key = "Table"
 		if gold >= building_items_costs[key]['cost']:
-			build(shop_objects[key], key, building_current_item[key], ray_result, delta, +0.52, building_items_costs[key])
+			build(shop_objects[key], key, false, building_current_item[key], ray_result, delta, +0.52, building_items_costs[key])
 		else:
 			print("Too Poor")
 			building_table.value = false
 	if building_furnace.value:
 		var key = "Furnace"
 		if gold >= building_items_costs[key]['cost']:
-			build(shop_objects[key], key, building_current_item[key], ray_result, delta, -0.05, building_items_costs[key])
+			build(shop_objects[key], key, true, building_current_item[key], ray_result, delta, -0.05, building_items_costs[key])
 		else:
 			print("Too Poor")
 			building_furnace.value = false
@@ -120,7 +122,7 @@ func handle_mouse_controls(delta) -> void:
 		move(ray_result, moving_object, delta)
 
 
-func build(object : PackedScene, object_name : String, building_object : Dictionary, ray_result: Dictionary, delta: float, offset, build_cost : Dictionary = {'cost' : 0}) -> void:
+func build(object : PackedScene, object_name : String, basement : bool, building_object : Dictionary, ray_result: Dictionary, delta: float, offset, build_cost : Dictionary = {'cost' : 0}) -> void:
 	# stop the user changing floors
 	camera.is_movement_locked = true
 	# Toggle the shop window to give more visibility
@@ -132,11 +134,15 @@ func build(object : PackedScene, object_name : String, building_object : Diction
 	# Check whether the ray has collided with anything, i.e. the floor
 	if ray_result.size() > 0:
 		# get the current floor, used for collisions and naming
-		var curr_floor = get_current_floor()
+		var curr_floor
+		curr_floor = get_current_floor()
 		# if a ghostly version of the object doesn't exist, create it
 		if temp_object == null:
 			temp_object = object.instantiate()
-			get_node("Tower/%s" % [curr_floor]).add_child(temp_object)
+			if basement:
+				get_node("Tower/Basement_Floors/%s" % [curr_floor]).add_child(temp_object)
+			elif not basement:
+				get_node("Tower/%s" % [curr_floor]).add_child(temp_object)
 			temp_object.visible = true
 		
 		# If the ghostly object does already exist continue
@@ -333,7 +339,9 @@ func is_floor(body: Node3D, current_floor) -> bool:
 
 # Add a new floor when the top floor upgrade is pressed
 func _on_floor_top_add_floor_pressed() -> void:
-	# create a new floor
+	create_new_top_floor()
+	
+func create_new_top_floor() -> void:
 	var new_floor = blank_floor.instantiate()
 	# make it a child of the Tower Node
 	tower.add_child(new_floor,0, 0)
@@ -352,17 +360,25 @@ func _on_floor_top_add_floor_pressed() -> void:
 	UI.tower_segments = tower.get_children()
 	UI.check_floor(camera.position)
 	# update the camera information for clamping
-	camera.get_floor_count()
+	camera.get_camera_clamp_values()
 
 # get the floor count, returned as an int
 func get_floor_count() -> int:
-	number_of_floors = get_tree().get_first_node_in_group("Tower").get_child_count()
+	number_of_floors = get_tree().get_first_node_in_group("Tower").get_child_count() - 1
+	print(number_of_floors)
 	return number_of_floors
+
+# get the current amount of basement floors as an int
+func get_basement_floor_count() -> int:
+	number_of_basement_floors = get_tree().get_first_node_in_group("Tower_Basement").get_child_count()
+	print(number_of_basement_floors)
+	return number_of_basement_floors
 
 # get the name of the current floor as a string
 func get_current_floor() -> String:
 	var current_floor_name = get_node("UI/Floor_Label").text
 	return current_floor_name
+
 
 # returns the current floor number as an int
 func get_current_floor_num() -> int:
@@ -382,6 +398,7 @@ func get_current_floor_num() -> int:
 	else:
 		return -1
 
+
 # for when the button to buy a table has been pressed
 func _on_floor_add_table_pressed() -> void:
 	building_table.value = true
@@ -396,3 +413,37 @@ func _on_floor_add_furnace_pressed() -> void:
 # For when the move button is pressed
 func _on_move_objects_pressed() -> void:
 	moving_object.value = true
+
+
+func _on_floor_bottom_add_floor_pressed() -> void:
+	create_new_basement_floor()
+
+
+func create_new_basement_floor() -> void:
+	var new_floor = blank_floor.instantiate()
+	# make it a child of the Basement floor node
+	var basement_tower = tower.get_node("Basement_Floors")
+	basement_tower.add_child(new_floor,0, 0)
+	# get a new number of floors
+	number_of_basement_floors = get_basement_floor_count()
+	prints(basement_tower, number_of_basement_floors)
+	# move the floor to the penultimate place in the list
+	# otherwise the for loop for naming and the shop doesn't work
+	basement_tower.move_child(new_floor, number_of_basement_floors - 1)
+	# give the node a name
+	new_floor.name = "Floor_-%d" % [number_of_basement_floors]
+	print(new_floor.name)
+	# give it a position
+	if basement_tower.get_child_count() == 1:
+		print("Triggered child_count == 1")
+		new_floor.global_position = tower.get_node("Floor_0").global_position - Vector3(0, 3.9, 0)
+	elif basement_tower.get_child_count() > 1:
+		print("Triggered child_count > 1")
+		var basement_floors : Array = basement_tower.get_children()
+		var lowest_floor = basement_floors[-1]
+		new_floor.global_position = lowest_floor.global_position - Vector3(0, 3.9, 0)
+	# update the UI
+	UI.tower_basement_segments = basement_tower.get_children()
+	UI.check_floor(camera.position)
+	# update the camera information for clamping
+	camera.get_camera_clamp_values()

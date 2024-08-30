@@ -3,6 +3,7 @@ extends Control
 # other nodes for use
 @onready var camera : Camera3D = get_node("../Camera3D")
 @onready var tower_segments : Array = get_node("../Tower").get_children()
+@onready var tower_basement_segments : Array = get_node("../Tower/Basement_Floors").get_children()
 @onready var floor_label : Label = get_node("Floor_Label")
 @onready var gold_label : Label = get_node("Gold_Label")
 @onready var shop_panel : Panel = get_node("ShopPanel")
@@ -16,7 +17,7 @@ var camera_is_moving_down : bool = false
 # hide the shop at the start and check the floor for the label in the top left
 func _ready():
 	shop_panel.hide()
-	check_floor(camera.position)
+	check_floor(camera.global_position)
 	update_gold_count()
 
 
@@ -60,13 +61,24 @@ func toggle_shop():
 
 # changes the label to match the current floor and refreshes the shop
 func check_floor(camera_pos : Vector3):
+	print("Checking floor for camera")
 	var y_pos : float = camera_pos.y
-	for i in tower_segments:
-		if i is Node3D:
-			#print(i)
-			if y_pos >= i.position.y:
-				floor_label.set_text(i.name) 
-				update_shop(i)
+	# check for above ground tower floors
+	if y_pos > 0:
+		for i in tower_segments:
+			if i is Node3D:
+				#print(i)
+				if y_pos == i.global_position.y + 0.5:
+					floor_label.set_text(i.name) 
+					update_shop(i)
+	# check for below ground tower floors
+	else:
+		for i in tower_basement_segments:
+			if i is Node3D:
+				if y_pos == i.global_position.y + 0.5:
+					floor_label.set_text(i.name)
+					update_shop(i)
+				
 
 
 # update the shop after checking the floor
@@ -75,11 +87,13 @@ func update_shop(curr_floor):
 	#print("Updating Shop")
 	for i in get_node("ShopPanel/VBoxContainer").get_children():
 		i.hide()
-	if curr_floor.name == "Floor_3":
-		$ShopPanel/VBoxContainer/Floor_Add_Furnace.show()
+	if curr_floor.name == "Floor_0":
+		$ShopPanel/VBoxContainer/Floor_Bottom_Add_Floor.show()
 	elif curr_floor.name == "Floor_1":
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
 	elif curr_floor.name == "Floor_2":
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
 	elif curr_floor.name == "Floor_TOP":
 		$ShopPanel/VBoxContainer/Floor_Top_Add_Floor.show()
+	elif curr_floor.name == "Floor_-1":
+		$ShopPanel/VBoxContainer/Floor_Add_Furnace.show()
