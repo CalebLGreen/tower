@@ -61,21 +61,21 @@ func toggle_shop():
 
 # changes the label to match the current floor and refreshes the shop
 func check_floor(camera_pos : Vector3):
-	print("Checking floor for camera")
+	#print("Checking floor for camera")
 	var y_pos : float = camera_pos.y
 	# check for above ground tower floors
 	if y_pos > 0:
 		for i in tower_segments:
 			if i is Node3D:
 				#print(i)
-				if y_pos == i.global_position.y + 0.5:
+				if absf(y_pos - i.global_position.y) <= 0.6:
 					floor_label.set_text(i.name) 
 					update_shop(i)
 	# check for below ground tower floors
 	else:
 		for i in tower_basement_segments:
 			if i is Node3D:
-				if y_pos == i.global_position.y + 0.5:
+				if absf(y_pos - i.global_position.y) <= 0.6:
 					floor_label.set_text(i.name)
 					update_shop(i)
 				
@@ -85,15 +85,19 @@ func check_floor(camera_pos : Vector3):
 # this is where the shop menu is controlled from
 func update_shop(curr_floor):
 	#print("Updating Shop")
+
 	for i in get_node("ShopPanel/VBoxContainer").get_children():
 		i.hide()
-	if curr_floor.name == "Floor_0":
+	if curr_floor.name == "Floor_0" and tower_basement_segments.size() == 0:
 		$ShopPanel/VBoxContainer/Floor_Bottom_Add_Floor.show()
-	elif curr_floor.name == "Floor_1":
+	if curr_floor.name == "Floor_1":
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
-	elif curr_floor.name == "Floor_2":
+	if curr_floor.name == "Floor_2":
 		$ShopPanel/VBoxContainer/Floor_Add_Table.show()
-	elif curr_floor.name == "Floor_TOP":
+	if curr_floor.name == "Floor_TOP":
 		$ShopPanel/VBoxContainer/Floor_Top_Add_Floor.show()
-	elif curr_floor.name == "Floor_-1":
+	if curr_floor.name == "Floor_-1":
 		$ShopPanel/VBoxContainer/Floor_Add_Furnace.show()
+	if tower_basement_segments.size() >= 1:
+		if curr_floor.name == tower_basement_segments[-1].name:
+			$ShopPanel/VBoxContainer/Floor_Bottom_Add_Floor.show()

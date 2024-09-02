@@ -426,13 +426,13 @@ func create_new_basement_floor() -> void:
 	basement_tower.add_child(new_floor,0, 0)
 	# get a new number of floors
 	number_of_basement_floors = get_basement_floor_count()
-	prints(basement_tower, number_of_basement_floors)
+	#prints(basement_tower, number_of_basement_floors)
 	# move the floor to the penultimate place in the list
 	# otherwise the for loop for naming and the shop doesn't work
 	basement_tower.move_child(new_floor, number_of_basement_floors - 1)
 	# give the node a name
 	new_floor.name = "Floor_-%d" % [number_of_basement_floors]
-	print(new_floor.name)
+	#print(new_floor.name)
 	# give it a position
 	if basement_tower.get_child_count() == 1:
 		print("Triggered child_count == 1")
@@ -440,8 +440,10 @@ func create_new_basement_floor() -> void:
 	elif basement_tower.get_child_count() > 1:
 		print("Triggered child_count > 1")
 		var basement_floors : Array = basement_tower.get_children()
-		var lowest_floor = basement_floors[-1]
+		var lowest_floor = basement_floors[-2]
+		prints(lowest_floor.name, lowest_floor.global_position)
 		new_floor.global_position = lowest_floor.global_position - Vector3(0, 3.9, 0)
+		print(new_floor.global_position)
 	# update the UI
 	UI.tower_basement_segments = basement_tower.get_children()
 	UI.check_floor(camera.position)
